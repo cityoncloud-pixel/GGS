@@ -1,0 +1,7 @@
+{
+  "name": "ggs",
+  "version": "0.1.0",
+  "installed_at": null,
+  "handoff_schema_version": "1.0",
+  "gaeh_consumer_min_version": "0.3.0"
+}
