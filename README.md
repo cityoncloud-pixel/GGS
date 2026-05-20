@@ -4,6 +4,8 @@
 
 **GAEH**（执行 Harness）在独立仓库：[cityoncloud-pixel/GAEH](https://github.com/cityoncloud-pixel/GAEH)（安装 Release **v0.3.0**）。
 
+**本仓库**：<https://github.com/cityoncloud-pixel/GGS>
+
 ---
 
 ## 产品边界
