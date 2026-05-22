@@ -40,7 +40,7 @@ Owner 想法
 | 核心问题 | **要做什么、做到什么算完成？** | **怎么做成、如何验证与落盘？** |
 | 主要输入 | `goal_seed.md` + `grill.md` | `goal.md` |
 | 主要输出 | `goal.md`（+ 评审与过程文件） | `plans/`、`reports/`、`specs/` 等 |
-| 运行方式 | Cursor 说「运行 GGS」+ 自动读 `runner.prompt.md`（`ggs init` 安装 Cursor Rule） | Cursor/Codex + harness 规则 + 适配器 |
+| 运行方式 | Cursor / Codex 说「运行 GGS」；或 `ggs agent -Runtime auto`（`ggs init` 安装 Rule + `AGENTS.md`） | Cursor/Codex + harness 规则 + 适配器 |
 | Owner 门禁 | 澄清问答、确认目标是否合理 | `APPROVE` 后才开始连续实现 |
 
 **边界口诀**：GGS 定义正确的问题；GAEH 正确地解决问题。
@@ -77,6 +77,13 @@ Owner 想法
     │       └── goal.schema.md   ← 输出质量门槛
     ├── goal.next.md             ← Export 缓冲（可选）
     └── goal.md                  ← Handoff 给 GAEH 的主契约
+
+项目根（`ggs init` 同时安装）：
+
+```text
+AGENTS.md                        ← Codex 触发
+.cursor/rules/ggs-runner.mdc     ← Cursor 触发
+```
 ```
 
 Kit 源文件位于本仓库：`package/templates/project_control/.ggs/`。  
@@ -130,16 +137,18 @@ EXPORTED
 ### 6.2 步骤
 
 1. **写入想法**：编辑 `project_control/.ggs/goal_seed.md`。
-2. **启动 Runner（推荐）**：在 Cursor 对话发送 [commandlist.md](../../commandlist.md) 中的 **「运行 GGS」**；Agent 从磁盘读取 `runner.prompt.md` / `grill.prompt.md`（`ggs init` 会安装 `.cursor/rules/ggs-runner.mdc`）。无需每次粘贴整份 prompt。
-3. **备选**：无 Cursor Rule 时，可全文粘贴 `runner.prompt.md`。
-4. **Goal Grill Gate**：Runner 在起草前扫描歧义；仅对高影响 A 级阻塞项提问（见 `grill.prompt.md`）。简单目标可设 `state.json.grill.depth=none` 走快速路径。回答在对话中回复即可；答不出可用 `UNKNOWN`。
-5. **等待 Export**：直至 `state.json` 为 `EXPORTED` 且 `goal.review.json` 为 `PASS`，并生成 `goal.md`。
-6. **进入 GAEH**：见 [GGS_GAEH_Handoff.md](./GGS_GAEH_Handoff.md)。
+2. **启动 Runner（推荐）**：在 **Cursor 或 Codex** 对话发送 [commandlist.md](../../commandlist.md) 中的 **「运行 GGS」**；Agent 从磁盘读取 `runner.prompt.md` / `grill.prompt.md`（`ggs init` 安装 `.cursor/rules/ggs-runner.mdc` 与 `AGENTS.md`）。无需粘贴整份 prompt。
+3. **CLI（Hermes）**：`ggs agent -TargetPath <项目> -Runtime auto|cursor|codex`。见 [GGS_Runtime.md](./GGS_Runtime.md)。
+4. **备选**：无触发文件时，可全文粘贴 `runner.prompt.md`。
+5. **Goal Grill Gate**：Runner 在起草前扫描歧义；仅对高影响 A 级阻塞项提问（见 `grill.prompt.md`）。简单目标可设 `state.json.grill.depth=none` 走快速路径。回答在对话中回复即可；答不出可用 `UNKNOWN`。
+6. **等待 Export**：直至 `state.json` 为 `EXPORTED` 且 `goal.review.json` 为 `PASS`，并生成 `goal.md`。
+7. **进入 GAEH**：见 [GGS_GAEH_Handoff.md](./GGS_GAEH_Handoff.md)。
 
 ### 6.3 CLI
 
 ```powershell
 ggs run -TargetPath D:\path\to\your-project
+ggs agent -TargetPath D:\path\to\your-project -Runtime auto   # Cursor/Codex CLI，见 GGS_Runtime.md
 ggs export -TargetPath D:\path\to\your-project
 ```
 
@@ -166,6 +175,8 @@ v0.3 的 GGS 是：
 | 文档 | 说明 |
 |------|------|
 | [GGS_GAEH_Handoff.md](./GGS_GAEH_Handoff.md) | Export / 启动 GAEH 的正式契约 |
+| [GGS_Runtime.md](./GGS_Runtime.md) | Cursor / Codex 对称运行说明 |
+| [GGS_Hermes_Integration.md](./GGS_Hermes_Integration.md) | `ggs agent` / Hermes 编排 |
 | [GGS_Decoupling_Assessment.md](../GGS_Decoupling_Assessment.md) | GGS 与 GAEH 耦合分析与解耦路线 |
 | [GAEH_v0.3_Freeze_and_GGS_Roadmap.md](../GAEH_v0.3_Freeze_and_GGS_Roadmap.md) | 冻结与分阶段计划 |
 | [VERSIONING.md](../VERSIONING.md) | 版本与 Release 说明 |

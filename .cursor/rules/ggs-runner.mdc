@@ -7,6 +7,8 @@ alwaysApply: false
 
 # GGS Runner（本仓库开发）
 
+> Codex：见仓库根 `AGENTS.md`。目标项目对称文件：`AGENTS.md` + `.cursor/rules/ggs-runner.mdc`。
+
 触发后 Read：
 
 - `package/templates/project_control/.ggs/templates/runner.prompt.md`

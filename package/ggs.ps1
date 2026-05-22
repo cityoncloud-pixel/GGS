@@ -40,6 +40,7 @@ Usage:
   .\ggs.ps1 install
   .\ggs.ps1 init     [-TargetPath <path>] [-Force]
   .\ggs.ps1 run      [-TargetPath <path>]
+  .\ggs.ps1 agent    [-TargetPath <path>] [-Runtime auto|cursor|codex] [-Fast] [-Print] [-DryRun] [-AgentCmd <exe>]
   .\ggs.ps1 doctor   [-TargetPath <path>]
   .\ggs.ps1 export   [-TargetPath <path>]
 
@@ -87,6 +88,9 @@ function Cmd-Install {
     Write-Json -Path $cfgPath -Obj @{
       schema_version = '1.0'
       projects_root = (Join-Path (Get-UserHome) 'ggs-projects')
+      runtime = @{ preferred = 'auto' }
+      cursor_agent = @{ command = 'agent' }
+      codex = @{ command = 'codex' }
     }
   }
 
@@ -128,17 +132,23 @@ function Cmd-Run {
   $goalSeed = Join-Path $TargetPath 'project_control\.ggs\goal_seed.md'
   $runner = Join-Path $TargetPath 'project_control\.ggs\templates\runner.prompt.md'
   $cursorRule = Join-Path $TargetPath '.cursor\rules\ggs-runner.mdc'
-  Write-Host "GGS (Goal Generation) — run in Cursor (no paste required if Cursor rule installed):"
+  $agentsMd = Join-Path $TargetPath 'AGENTS.md'
+  Write-Host "GGS (Goal Generation) — IDE or CLI (no paste required after ggs init):"
   Write-Host ""
   Write-Host "  1) Edit: $goalSeed"
-  Write-Host "  2) In Cursor chat, send:  运行 GGS"
-  Write-Host "     Agent reads runner from: $runner"
+  Write-Host "  2) IDE:  Cursor or Codex chat ->  运行 GGS"
+  Write-Host "     Runner: $runner"
   if (Test-Path -LiteralPath $cursorRule) {
-    Write-Host "     Cursor rule: $cursorRule  (installed)"
+    Write-Host "     Cursor: $cursorRule"
   } else {
-    Write-Host "     WARN: missing $cursorRule — re-run: ggs init -Force"
-    Write-Host "     Fallback: paste runner.prompt.md, or say 运行 GGS after init"
+    Write-Host "     WARN: missing Cursor rule — ggs init -Force"
   }
+  if (Test-Path -LiteralPath $agentsMd) {
+    Write-Host "     Codex:  $agentsMd"
+  } else {
+    Write-Host "     WARN: missing AGENTS.md — ggs init -Force"
+  }
+  Write-Host "  3) CLI:  ggs agent -TargetPath `"$TargetPath`" -Runtime auto"
   Write-Host ""
   Write-Host "  See: commandlist.md (in GGS kit / repo root)"
   Write-Host ""
@@ -150,6 +160,28 @@ function Cmd-Run {
   Write-Host ""
   Write-Host "Then: ggs export -TargetPath `"$TargetPath`""
   Write-Host "Then hand off to GAEH: gaeh doctor / gaeh start on same project path."
+}
+
+function Cmd-Agent {
+  param(
+    [string]$TargetPath = (Get-Location).Path,
+    [string]$Runtime = 'auto',
+    [switch]$Fast,
+    [switch]$Print,
+    [switch]$DryRun,
+    [string]$AgentCmd = $null,
+    [string]$Prompt = $null
+  )
+  $agentScript = Join-Path (Get-KitRoot) 'ggs-agent.ps1'
+  if (-not (Test-Path -LiteralPath $agentScript)) { throw "Missing ggs-agent.ps1: $agentScript" }
+  $cmd = @('-ExecutionPolicy', 'Bypass', '-File', $agentScript, '-TargetPath', $TargetPath, '-Runtime', $Runtime)
+  if ($Fast) { $cmd += '-Fast' }
+  if ($Print) { $cmd += '-Print' }
+  if ($DryRun) { $cmd += '-DryRun' }
+  if ($AgentCmd) { $cmd += @('-AgentCmd', $AgentCmd) }
+  if ($Prompt) { $cmd += @('-Prompt', $Prompt) }
+  & powershell @cmd
+  exit $LASTEXITCODE
 }
 
 function Cmd-Doctor {
@@ -234,6 +266,16 @@ switch ($cmd) {
     Cmd-Init -TargetPath $tp -Force:([bool]$force)
   }
   'run' { Cmd-Run -TargetPath $tp }
+  'agent' {
+    $fast = ($rest -contains '-Fast')
+    $print = ($rest -contains '-Print')
+    $dry = ($rest -contains '-DryRun')
+    $agentCmd = Get-ArgValue '-AgentCmd' $rest
+    $prompt = Get-ArgValue '-Prompt' $rest
+    $rt = Get-ArgValue '-Runtime' $rest
+    if (-not $rt) { $rt = 'auto' }
+    Cmd-Agent -TargetPath $tp -Runtime $rt -Fast:([bool]$fast) -Print:([bool]$print) -DryRun:([bool]$dry) -AgentCmd $agentCmd -Prompt $prompt
+  }
   'doctor' { Cmd-Doctor -TargetPath $tp }
   'export' { Cmd-Export -TargetPath $tp }
   'help' { Print-Help }

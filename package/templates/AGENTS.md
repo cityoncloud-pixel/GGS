@@ -1,14 +1,6 @@
----
-description: >
-  GGS Goal Compiler。用户说「运行 GGS」「run GGS」「ggs run」「启动 GGS」「目标编译」
-  或要生成/更新 project_control/goal.md 时启用。需已 ggs init（存在 project_control/.ggs/）。
-globs: project_control/.ggs/**,project_control/goal.md,project_control/goal.next.md
-alwaysApply: false
----
+# GGS Runner（Codex）
 
-# GGS Runner（Cursor）
-
-> Codex 用户：同等功能见项目根 `AGENTS.md`。两端触发短语相同：**运行 GGS**。
+> Cursor 用户：同等功能见 `.cursor/rules/ggs-runner.mdc`。两端触发短语相同：**运行 GGS**。
 
 ## 触发
 
@@ -25,7 +17,7 @@ alwaysApply: false
 
 ## 工作区文件
 
-- 读：`state.json`、`goal_seed.md`、`grill.md`、`goal.draft.md`、`assumptions.md`
+- 读：`project_control/.ggs/state.json`、`goal_seed.md`、`grill.md`、`goal.draft.md`、`assumptions.md`
 - 写：同上 + `goal.review.json` + `project_control/goal.next.md` + `project_control/goal.md`
 - 不执行 GAEH；不调用外部 API。
 
@@ -39,12 +31,10 @@ alwaysApply: false
 - `goal.review.json` → `verdict: "PASS"`
 - `project_control/goal.md` 满足 `goal.schema.md` Hard Gates
 
-用户可 `@ggs-runner` 强制启用本规则。
-
 ## CLI（Hermes / 终端）
 
-```powershell
-ggs agent -TargetPath <本项目根> -Runtime cursor
+```bash
+ggs agent -TargetPath <本项目根> -Runtime codex
 # 或
 ggs agent -TargetPath <本项目根> -Runtime auto
 ```

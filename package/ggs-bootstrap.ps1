@@ -55,6 +55,17 @@ if (Test-Path -LiteralPath $cursorRulesSrc) {
   }
 }
 
+# Codex AGENTS.md (symmetric trigger for Codex)
+$agentsSrc = Join-Path $templatesRoot 'AGENTS.md'
+if (Test-Path -LiteralPath $agentsSrc) {
+  $agentsDst = Join-Path $TargetPath 'AGENTS.md'
+  if ((Test-Path -LiteralPath $agentsDst) -and (-not $Force)) {
+    # skip
+  } else {
+    Copy-TemplateItem -Src $agentsSrc -Dst $agentsDst
+  }
+}
+
 # Handoff shells (GAEH consumes goal.md; empty template until GGS export)
 $handoffSrc = Join-Path $templatesRoot 'handoff'
 foreach ($name in @('goal.md', 'goal.next.md')) {
@@ -75,5 +86,6 @@ Set-Content -LiteralPath $logPath -Value ($log -join [Environment]::NewLine) -En
 
 Write-Host "Done."
 Write-Host "Next: edit project_control\.ggs\goal_seed.md"
-Write-Host "      In Cursor chat say: 运行 GGS   (see commandlist.md; no need to paste runner.prompt.md)"
-Write-Host "      Or: ggs run -TargetPath `"$TargetPath`""
+Write-Host "      IDE:  Cursor or Codex chat ->  运行 GGS"
+Write-Host "      CLI:  ggs agent -TargetPath `"$TargetPath`" -Runtime auto"
+Write-Host "      See:  commandlist.md"

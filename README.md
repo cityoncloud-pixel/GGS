@@ -33,8 +33,9 @@ ggs init -TargetPath D:\path\to\your-project
 # 3) 编辑种子并在 Cursor 中运行 GGS
 # 编辑 project_control/.ggs/goal_seed.md
 ggs run -TargetPath D:\path\to\your-project
-# → 在 Cursor 对话中说：运行 GGS（无需粘贴 runner.prompt.md）
-# → init 已安装 .cursor/rules/ggs-runner.mdc，Agent 自动读取 runner + grill prompt
+# → Cursor 或 Codex 对话中说：运行 GGS（无需粘贴 runner.prompt.md）
+# → init 安装 .cursor/rules/ggs-runner.mdc + AGENTS.md
+# → 或 CLI：ggs agent -TargetPath ... -Runtime auto
 # → 简单目标：运行 GGS，fast mode / grill depth none
 
 # 4) 校验可移交 GAEH
@@ -53,7 +54,8 @@ ggs export -TargetPath D:\path\to\your-project
 |------|------|
 | `ggs install` | 安装到 `~/.ggs` |
 | `ggs init` | 落盘 `project_control/.ggs/` 与 `goal.md` 模板 |
-| `ggs run` | 打印 runner 入口 |
+| `ggs run` | 打印 runner 入口（IDE 中说「运行 GGS」） |
+| `ggs agent` | 调用 Cursor / Codex CLI 执行 GGS（`-Runtime auto\|cursor\|codex`） |
 | `ggs doctor` | 检查 GGS 文件结构 |
 | `ggs export` | 检查 Handoff 三件套（EXPORTED + PASS + goal.md） |
 

@@ -44,10 +44,21 @@ foreach ($f in $required) {
 Ok "GGS core files present"
 
 $cursorRule = Join-Path $TargetPath '.cursor\rules\ggs-runner.mdc'
-if (Test-Path -LiteralPath $cursorRule) {
+$agentsMd = Join-Path $TargetPath 'AGENTS.md'
+$hasCursor = Test-Path -LiteralPath $cursorRule
+$hasCodex = Test-Path -LiteralPath $agentsMd
+if ($hasCursor) {
   Ok "Cursor rule present (.cursor/rules/ggs-runner.mdc)"
 } else {
-  Warn "Missing .cursor/rules/ggs-runner.mdc (re-run: ggs init -Force) — use 运行 GGS in Cursor or paste runner.prompt.md"
+  Warn "Missing .cursor/rules/ggs-runner.mdc (re-run: ggs init -Force)"
+}
+if ($hasCodex) {
+  Ok "Codex AGENTS.md present (project root)"
+} else {
+  Warn "Missing AGENTS.md at project root (re-run: ggs init -Force)"
+}
+if (-not $hasCursor -and -not $hasCodex) {
+  Warn "No IDE auto-trigger files — paste runner.prompt.md or use: ggs agent -Runtime auto"
 }
 
 foreach ($jsonRel in @('project_control\.ggs\state.json', 'project_control\.ggs\goal.review.json')) {
