@@ -28,11 +28,13 @@ Ok "GGS workspace present"
 
 $required = @(
   'project_control\.ggs\goal_seed.md',
+  'project_control\.ggs\grill.md',
   'project_control\.ggs\goal.draft.md',
   'project_control\.ggs\assumptions.md',
   'project_control\.ggs\state.json',
   'project_control\.ggs\goal.review.json',
   'project_control\.ggs\templates\runner.prompt.md',
+  'project_control\.ggs\templates\grill.prompt.md',
   'project_control\.ggs\templates\goal.schema.md'
 )
 foreach ($f in $required) {
@@ -40,6 +42,13 @@ foreach ($f in $required) {
   if (-not (Test-Path -LiteralPath $p)) { Fail "Missing file: $f" }
 }
 Ok "GGS core files present"
+
+$cursorRule = Join-Path $TargetPath '.cursor\rules\ggs-runner.mdc'
+if (Test-Path -LiteralPath $cursorRule) {
+  Ok "Cursor rule present (.cursor/rules/ggs-runner.mdc)"
+} else {
+  Warn "Missing .cursor/rules/ggs-runner.mdc (re-run: ggs init -Force) — use 运行 GGS in Cursor or paste runner.prompt.md"
+}
 
 foreach ($jsonRel in @('project_control\.ggs\state.json', 'project_control\.ggs\goal.review.json')) {
   $p = Join-Path $TargetPath $jsonRel

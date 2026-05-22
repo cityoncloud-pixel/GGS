@@ -127,16 +127,29 @@ function Cmd-Run {
   param([string]$TargetPath = (Get-Location).Path)
   $goalSeed = Join-Path $TargetPath 'project_control\.ggs\goal_seed.md'
   $runner = Join-Path $TargetPath 'project_control\.ggs\templates\runner.prompt.md'
-  Write-Host "GGS (Goal Generation) runner:"
+  $cursorRule = Join-Path $TargetPath '.cursor\rules\ggs-runner.mdc'
+  Write-Host "GGS (Goal Generation) — run in Cursor (no paste required if Cursor rule installed):"
+  Write-Host ""
   Write-Host "  1) Edit: $goalSeed"
-  Write-Host "  2) Paste runner prompt from: $runner"
+  Write-Host "  2) In Cursor chat, send:  运行 GGS"
+  Write-Host "     Agent reads runner from: $runner"
+  if (Test-Path -LiteralPath $cursorRule) {
+    Write-Host "     Cursor rule: $cursorRule  (installed)"
+  } else {
+    Write-Host "     WARN: missing $cursorRule — re-run: ggs init -Force"
+    Write-Host "     Fallback: paste runner.prompt.md, or say 运行 GGS after init"
+  }
+  Write-Host ""
+  Write-Host "  See: commandlist.md (in GGS kit / repo root)"
   Write-Host ""
   Write-Host "Expected outputs:"
+  Write-Host "  - project_control\.ggs\grill.md (after Grill Gate)"
   Write-Host "  - project_control\goal.md"
   Write-Host "  - project_control\.ggs\goal.review.json"
   Write-Host "  - state.json status=EXPORTED, goal.review.json verdict=PASS"
   Write-Host ""
-  Write-Host "Then hand off to GAEH (separate kit): gaeh doctor / gaeh start on same project path."
+  Write-Host "Then: ggs export -TargetPath `"$TargetPath`""
+  Write-Host "Then hand off to GAEH: gaeh doctor / gaeh start on same project path."
 }
 
 function Cmd-Doctor {

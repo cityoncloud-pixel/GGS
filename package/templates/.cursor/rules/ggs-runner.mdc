@@ -1,0 +1,40 @@
+---
+description: >
+  GGS Goal Compiler。用户说「运行 GGS」「run GGS」「ggs run」「启动 GGS」「目标编译」
+  或要生成/更新 project_control/goal.md 时启用。需已 ggs init（存在 project_control/.ggs/）。
+globs: project_control/.ggs/**,project_control/goal.md,project_control/goal.next.md
+alwaysApply: false
+---
+
+# GGS Runner（Cursor）
+
+## 触发
+
+用户说「运行 GGS」「run GGS」「ggs run」「启动 GGS」「目标编译」，或要处理 `goal_seed` / `goal.md` / Grill 澄清。
+
+## 启动（禁止让用户粘贴 prompt）
+
+1. 用 **Read** 读取（相对项目根）：
+   - `project_control/.ggs/templates/runner.prompt.md`（全文，权威流程）
+   - Goal Grill Gate 阶段再读：`project_control/.ggs/templates/grill.prompt.md`
+   - 起草/评审时读：`project_control/.ggs/templates/goal.schema.md`
+2. 若 `runner.prompt.md` 不存在 → 停止，提示用户执行 `ggs init`。
+3. 严格按 `runner.prompt.md` 状态机执行；以磁盘文件为准，不依赖对话记忆。
+
+## 工作区文件
+
+- 读：`state.json`、`goal_seed.md`、`grill.md`、`goal.draft.md`、`assumptions.md`
+- 写：同上 + `goal.review.json` + `project_control/goal.next.md` + `project_control/goal.md`
+- 不执行 GAEH；不调用外部 API。
+
+## Goal Grill Gate
+
+起草 `goal.draft.md` 之前必须先完成 Grill（见 `grill.prompt.md`），结果写入 `grill.md`；仅对 A 级高影响阻塞项逐条提问。
+
+## 完成标准
+
+- `state.json` → `status: "EXPORTED"`
+- `goal.review.json` → `verdict: "PASS"`
+- `project_control/goal.md` 满足 `goal.schema.md` Hard Gates
+
+用户可 `@ggs-runner` 强制启用本规则。

@@ -15,6 +15,14 @@
     "max_question_rounds": 3,
     "max_revision_rounds": 3,
     "require_verifiable_success_criteria": true
+  },
+  "grill": {
+    "enabled": true,
+    "depth": "normal",
+    "state": "NOT_STARTED",
+    "questions_asked": 0,
+    "a_blockers_remaining": 0,
+    "last_updated": null
   }
 }
 

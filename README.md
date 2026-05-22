@@ -30,9 +30,12 @@ $env:PATH = "$env:USERPROFILE\.ggs\bin;$env:PATH"
 # 2) 在目标项目初始化 GGS 工作区（仅 .ggs + goal 壳，不含 ai_harness）
 ggs init -TargetPath D:\path\to\your-project
 
-# 3) 编辑种子并运行 GGS
+# 3) 编辑种子并在 Cursor 中运行 GGS
+# 编辑 project_control/.ggs/goal_seed.md
 ggs run -TargetPath D:\path\to\your-project
-# → 编辑 goal_seed.md，粘贴 runner.prompt.md 到 Cursor/Codex
+# → 在 Cursor 对话中说：运行 GGS（无需粘贴 runner.prompt.md）
+# → init 已安装 .cursor/rules/ggs-runner.mdc，Agent 自动读取 runner + grill prompt
+# → 简单目标：运行 GGS，fast mode / grill depth none
 
 # 4) 校验可移交 GAEH
 ggs export -TargetPath D:\path\to\your-project

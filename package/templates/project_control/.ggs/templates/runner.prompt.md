@@ -6,7 +6,7 @@
 
 1. **无会话依赖**：一切以项目文件为准；不要依赖对话记忆。
 2. **只读写固定文件**：
-   - 读：`project_control/.ggs/state.json`、`project_control/.ggs/goal_seed.md`、`project_control/.ggs/goal.draft.md`、`project_control/.ggs/assumptions.md`、`project_control/.ggs/templates/goal.schema.md`
+   - 读：`project_control/.ggs/state.json`、`project_control/.ggs/goal_seed.md`、`project_control/.ggs/grill.md`、`project_control/.ggs/goal.draft.md`、`project_control/.ggs/assumptions.md`、`project_control/.ggs/templates/goal.schema.md`、`project_control/.ggs/templates/grill.prompt.md`
    - 写：上述文件 + `project_control/.ggs/goal.review.json`（可选同时写 `goal.review.md`）+ `project_control/goal.next.md` + `project_control/goal.md`
 3. **不调用任何外部 API**（使用平台内置能力即可）。
 4. **用户回答不了时**：用户可以用 `UNKNOWN` 或 “我不知道” 回复。此时你必须给出 **LLM Best-Effort** 的最优可执行假设，并写入 `assumptions.md`，同时在 `Risks/Constraints` 明示这是假设。
@@ -16,21 +16,53 @@
 
 每次运行按以下状态机自动推进，直到导出完成：
 
-### A) Capture / Clarify
+### A) Goal Grill Gate（在 Draft 之前）
 
-- 从 `goal_seed.md` 提取信息，生成 3~7 个最高价值澄清问题，写入 `state.json.open_questions[]`，并在对话中逐条提问。
-- 用户回答写回 `goal_seed.md`（追加在末尾一个 `## Q&A` 区块中）。
-- 最多进行 `state.json.policy.max_question_rounds` 轮；如果仍缺信息，进入 Best-Effort 假设补全。
+在生成 `project_control/.ggs/goal.draft.md` 之前，必须运行 **Goal Grill Gate**。完整策略见 `project_control/.ggs/templates/grill.prompt.md`。
 
-澄清提问策略（强约束）：
+**输入：**
 
-- 优先问“会影响可验证性交付”的问题：技术栈/运行方式/验收方式/范围边界/数据来源。
-- 每轮最多 7 个问题；如果用户连续回答 UNKNOWN，则停止追问并转 Best-Effort 假设。
+- `project_control/.ggs/goal_seed.md`
+- `project_control/.ggs/grill.md`（若已存在）
+- 必要时读取项目文件，用代码库事实代替向用户提问
+
+**流程：**
+
+1. 对 `goal_seed.md` 做歧义扫描。
+2. 将每个歧义分类为：
+   - **A**：User-confirm required（高影响阻塞项）
+   - **B**：AI-recommend with default
+   - **C**：AI-decide silently（不影响目标契约的实现细节）
+3. **仅**就 A 级阻塞项向用户提问；每轮一个问题，使用 `grill.prompt.md` 规定的 **GGS Grill Question** 格式。
+4. 不要因为“未写明”而提问。实现细节若不影响用户可见行为、数据模型、持久化、API/模块契约、外部服务边界、验收标准、安全/隐私/儿童向行为、范围/非目标，则归入 B/C 并由 AI 自行解决。
+5. 若歧义可通过检查现有代码库回答，则检查代码库，不要打扰用户。
+6. 将全部已确认决策与假设写入 `project_control/.ggs/grill.md`；更新 `state.json.grill`（若存在该字段）。
+7. 然后进入 Draft，且 Draft **必须**同时依据 `goal_seed.md` 与 `grill.md`。
+
+**Grill depth**（来自 `state.json.grill.depth`，缺省为 `normal`）：
+
+| depth | 行为 |
+|-------|------|
+| `none` | 不提问；仅写假设到 `grill.md`（快速路径） |
+| `light` | 最多 1–2 个 A 级问题 |
+| `normal` | 最多 3–5 个 A 级问题 |
+| `deep` | 最多 6–10 个 A 级问题，按决策域分组 |
+
+用户明确要求 fast mode → `depth=none`；明确要求 deep clarification → `depth=deep`。
+
+若 A 级阻塞项超出当前 depth 预算：产出 **Grill Map**，询问是否加深或接受 AI 假设并记录风险。
+
+**停止条件：** 所有 A 级已解决、剩余为 B/C、已达 depth 预算、用户要求停止、或继续提问无法显著改善目标契约。
+
+用户回答可写入 `goal_seed.md` 末尾 `## Q&A`，并同步到 `grill.md` 的 Confirmed Decisions / Goal Seed Additions。
+
+**向后兼容：** 若 `state.json` 无 `grill` 字段，仍执行 Grill Gate，depth 视为 `normal`。
 
 ### B) Draft Goal
 
 - 基于 `goal.schema.md` 的 Hard Gates，把 `goal.draft.md` 填完整。
-- 所有缺失但必须的字段：用 Best-Effort 假设补齐，并记录到 `assumptions.md`（新增条目）。
+- **输入来源**：`goal_seed.md` + `grill.md`（Confirmed Decisions、AI Assumptions、Non-goals、Implementation Freedoms、Remaining Risks）。
+- 所有缺失但必须的字段：用 Best-Effort 假设补齐，并记录到 `assumptions.md`（新增条目）；与 `grill.md` 中假设保持一致，避免重复矛盾。
 
 ### C) Review Goal (Structured)
 
@@ -62,6 +94,7 @@
 
 至少包含：
 - `goal_seed.md`
+- `grill.md`
 - `goal.draft.md`
 - `goal.review.json`（如已存在）
 - `assumptions.md`

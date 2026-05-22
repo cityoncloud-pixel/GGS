@@ -44,6 +44,17 @@ foreach ($f in $ggsFiles) {
   Copy-TemplateItem -Src $f.FullName -Dst $dst
 }
 
+# Cursor rules (so "运行 GGS" triggers runner without pasting prompt)
+$cursorRulesSrc = Join-Path $templatesRoot '.cursor\rules'
+if (Test-Path -LiteralPath $cursorRulesSrc) {
+  $ruleFiles = Get-ChildItem -LiteralPath $cursorRulesSrc -File
+  foreach ($f in $ruleFiles) {
+    $dst = Join-Path (Join-Path $TargetPath '.cursor\rules') $f.Name
+    if ((Test-Path -LiteralPath $dst) -and (-not $Force)) { continue }
+    Copy-TemplateItem -Src $f.FullName -Dst $dst
+  }
+}
+
 # Handoff shells (GAEH consumes goal.md; empty template until GGS export)
 $handoffSrc = Join-Path $templatesRoot 'handoff'
 foreach ($name in @('goal.md', 'goal.next.md')) {
@@ -63,4 +74,6 @@ $log = @(
 Set-Content -LiteralPath $logPath -Value ($log -join [Environment]::NewLine) -Encoding UTF8
 
 Write-Host "Done."
-Write-Host "Next: edit project_control\.ggs\goal_seed.md, then run: ggs run -TargetPath `"$TargetPath`""
+Write-Host "Next: edit project_control\.ggs\goal_seed.md"
+Write-Host "      In Cursor chat say: 运行 GGS   (see commandlist.md; no need to paste runner.prompt.md)"
+Write-Host "      Or: ggs run -TargetPath `"$TargetPath`""

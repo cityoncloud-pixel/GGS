@@ -1,7 +1,7 @@
 # Goal
 
 ## 1. Intent / 原始意图
-（从 goal_seed.md 提炼）
+（从 goal_seed.md + grill.md 提炼）
 
 ## 2. Target Outcome / 目标结果
 （最终交付什么）

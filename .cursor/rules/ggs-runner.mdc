@@ -1,0 +1,16 @@
+---
+description: >
+  GGS kit development. User says 运行 GGS or run GGS when working on package/templates.
+globs: package/templates/project_control/.ggs/**,package/templates/project_control/**
+alwaysApply: false
+---
+
+# GGS Runner（本仓库开发）
+
+触发后 Read：
+
+- `package/templates/project_control/.ggs/templates/runner.prompt.md`
+- `package/templates/project_control/.ggs/templates/grill.prompt.md`
+- `package/templates/project_control/.ggs/templates/goal.schema.md`
+
+按 runner 流程执行；禁止要求用户粘贴 prompt。
